@@ -117,8 +117,25 @@
         loadConfiguration();
 
         function create() {
-          // TODO: Implement it in backend 😉
-          console.log(btoa(":" + pat));
+          let endpoint = "https://dev.azure.com/";
+          let accessToken = btoa(":" + pat);
+          console.log(accessToken);
+          fetch(endpoint + organization + "/_apis/projects?api-version=2.0",
+                {
+                    headers: {
+                        "Accept": "application/json",
+                        "Authorization": "Basic " + accessToken
+                    }
+                })
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.log(error);
+                });
         }
     </script>
 </body>
