@@ -7,7 +7,8 @@
     <style type="text/css">
         html,
         body,
-        input {
+        input,
+        select {
             padding-top: 0px;
             padding-bottom: 10px;
             padding-left: 20px;
@@ -38,10 +39,25 @@
         <input id="saveConfigurationButton" type="button" value="Save" onclick="saveConfiguration();" />
         <hr />
     </div>
-    <p>
-    TBD
-    </p>
-    <input id="createButton" type="button" value="Create" onclick="create();" />
+    <div id="beforeLogin">
+    </div>
+    <div id="afterLogin">
+        Project name:
+        <input id="projectName" type="text" title="Project name" />
+
+        Configuration file:
+        <input id="configurationFile" type="file" title="Configuration file" />
+
+        Template:
+        <select id="template">
+            <option value="">--Please choose an option--</option>
+            <option value="s">Simple template</option>
+            <option value="m">Medium template</option>
+            <option value="l">Complex template</option>
+        </select>
+
+        <input id="createButton" type="button" value="Create" onclick="create();" />
+    </div>
     <br />
     <br />
     <div id="log"></div>
@@ -60,10 +76,6 @@
             document.getElementById('setupOpen').style.display = '';
             document.getElementById('setupClose').style.display = 'none';
             document.getElementById('setup').style.display = 'none';
-        }
-
-        function create() {
-          // TODO: Implement it 😉
         }
 
         function loadConfiguration() {
@@ -92,6 +104,11 @@
         }
 
         loadConfiguration();
+
+        
+        function create() {
+          // TODO: Implement it 😉
+        }
     </script>
 </body>
 </html>
