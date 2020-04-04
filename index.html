@@ -50,6 +50,9 @@
         Configuration file:
         <input id="configurationFile" type="file" title="Configuration file" />
 
+        Template file:
+        <input id="yamlFile" type="file" title="YAML file" />
+
         Template:
         <select id="template">
             <option value="">--Please choose an option--</option>
@@ -179,14 +182,19 @@
 
                     console.log(data);
                     document.getElementById("configurationFile").files[0].text()
-                        .then(text => createGitCommit(text));
+                        .then(text => {
+                            document.getElementById("yamlFile").files[0].text()
+                                .then(yaml => {
+                                    createGitCommit(text, yaml);
+                                });
+                        });
                 })
                 .catch(error => {
                     console.log(error);
                 });            
         }
 
-        function createGitCommit(configurationContent) {
+        function createGitCommit(configurationContent, yamlContent) {
             let json = {
                 "refUpdates": [{
                     "name": "refs/heads/master",
@@ -212,6 +220,16 @@
                             },
                             "newContent": {
                                 "content": configurationContent,
+                                "contentType": "rawtext"
+                            }
+                        },
+                        {
+                            "changeType": "add",
+                            "item": {
+                                "path": "/azure-pipelines.yml"
+                            },
+                            "newContent": {
+                                "content": yamlContent,
                                 "contentType": "rawtext"
                             }
                         }
