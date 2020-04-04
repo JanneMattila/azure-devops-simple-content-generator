@@ -30,18 +30,14 @@
         <button id="setupClose" onclick="hideSetup();" style="display:none">➖</button>
     </div>
     <div id="setup" style="display:none">
-        Client Id of the Azure AD application:
-        <input id="clientId" type="text" title="ClientId" />
-
-        Tenant Id:
-        <input id="tenantId" type="text" title="TenantId" />
+        Personal Access Token (PAT):
+        <input id="pat" type="text" title="pat" />
         <br /><br />
         <input id="saveConfigurationButton" type="button" value="Save" onclick="saveConfiguration();" />
         <hr />
     </div>
-    <div id="beforeLogin">
-    </div>
-    <div id="afterLogin">
+    <br />
+    <div id="afterConfiguration" style="display:none">
         Project name:
         <input id="projectName" type="text" title="Project name" />
 
@@ -55,7 +51,7 @@
             <option value="m">Medium template</option>
             <option value="l">Complex template</option>
         </select>
-
+        <br /><br />
         <input id="createButton" type="button" value="Create" onclick="create();" />
     </div>
     <br />
@@ -63,8 +59,11 @@
     <div id="log"></div>
 
     <script>
-        let clientId = "";
-        let tenantId = "";
+        let pat = "";
+
+        let userAgentApplication;
+        let accessTokenRequest;
+        let accessToken;
 
         function showSetup() {
             document.getElementById('setupOpen').style.display = 'none';
@@ -79,33 +78,27 @@
         }
 
         function loadConfiguration() {
-            clientId = sessionStorage.getItem("clientId");
-            tenantId = sessionStorage.getItem("tenantId");
+            pat = sessionStorage.getItem("pat");
 
-            console.log(`loadConfiguration: ${clientId} ${tenantId}`);
-            if (clientId == null || tenantId == null ||
-                clientId.length == 0 || tenantId.length == 0) {
+            if (pat == null || pat.length == 0) {
                 showSetup();
                 return;
             }
             else {
-                document.getElementById('clientId').value = clientId;
-                document.getElementById('tenantId').value = tenantId;
+                document.getElementById('pat').value = pat;
                 hideSetup();
+                document.getElementById('afterConfiguration').style.display = '';
             }
         }
 
         function saveConfiguration() {
-            clientId = document.getElementById('clientId').value;
-            tenantId = document.getElementById('tenantId').value;
-            sessionStorage.setItem("clientId", clientId);
-            sessionStorage.setItem("tenantId", tenantId);
+            pat = document.getElementById('pat').value;
+            sessionStorage.setItem("pat", pat);
             loadConfiguration();
         }
 
         loadConfiguration();
 
-        
         function create() {
           // TODO: Implement it 😉
         }
