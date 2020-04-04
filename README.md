@@ -1,9 +1,5 @@
-# Azure DevOps Simple content generator
+# Azure DevOps Simple content generator mock up
 
-## How to setup Azure AD
-
-**to be added**
-
-## Try this out!
-
-[Azure DevOps Simple content generator](https://jannemattila.github.io/azure-devops-simple-content-generator/)
+This is demo mock up to illustrate certain content
+generation scenarios. Look for [Azure DevOps Demo Generator](https://azuredevopsdemogenerator.azurewebsites.net/)
+to get full example.
