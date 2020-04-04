@@ -18,23 +18,80 @@
             width: 800px;
         }
     </style>
-    <script>
-        function create() {
-          // TODO: Implement it 😉
-        }        
-    </script>
 </head>
 <body>
     <h1>
         Azure DevOps Simple content generator
     </h1>
 
+    <div>
+        <button id="setupOpen" onclick="showSetup();">➕</button>
+        <button id="setupClose" onclick="hideSetup();" style="display:none">➖</button>
+    </div>
+    <div id="setup" style="display:none">
+        Client Id of the Azure AD application:
+        <input id="clientId" type="text" title="ClientId" />
+
+        Tenant Id:
+        <input id="tenantId" type="text" title="TenantId" />
+        <br /><br />
+        <input id="saveConfigurationButton" type="button" value="Save" onclick="saveConfiguration();" />
+        <hr />
+    </div>
     <p>
     TBD
     </p>
-    <input id="createButton" type="button" value="create" onclick="create();" />
+    <input id="createButton" type="button" value="Create" onclick="create();" />
     <br />
     <br />
     <div id="log"></div>
+
+    <script>
+        let clientId = "";
+        let tenantId = "";
+
+        function showSetup() {
+            document.getElementById('setupOpen').style.display = 'none';
+            document.getElementById('setupClose').style.display = '';
+            document.getElementById('setup').style.display = '';
+        }
+
+        function hideSetup() {
+            document.getElementById('setupOpen').style.display = '';
+            document.getElementById('setupClose').style.display = 'none';
+            document.getElementById('setup').style.display = 'none';
+        }
+
+        function create() {
+          // TODO: Implement it 😉
+        }
+
+        function loadConfiguration() {
+            clientId = sessionStorage.getItem("clientId");
+            tenantId = sessionStorage.getItem("tenantId");
+
+            console.log(`loadConfiguration: ${clientId} ${tenantId}`);
+            if (clientId == null || tenantId == null ||
+                clientId.length == 0 || tenantId.length == 0) {
+                showSetup();
+                return;
+            }
+            else {
+                document.getElementById('clientId').value = clientId;
+                document.getElementById('tenantId').value = tenantId;
+                hideSetup();
+            }
+        }
+
+        function saveConfiguration() {
+            clientId = document.getElementById('clientId').value;
+            tenantId = document.getElementById('tenantId').value;
+            sessionStorage.setItem("clientId", clientId);
+            sessionStorage.setItem("tenantId", tenantId);
+            loadConfiguration();
+        }
+
+        loadConfiguration();
+    </script>
 </body>
 </html>
