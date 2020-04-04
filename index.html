@@ -100,9 +100,9 @@
         }
 
         function loadConfiguration() {
-            organizationName = sessionStorage.getItem("organization");
-            projectName = sessionStorage.getItem("project");
-            pat = sessionStorage.getItem("pat");
+            organizationName = localStorage.getItem("organization");
+            projectName = localStorage.getItem("project");
+            pat = localStorage.getItem("pat");
 
             if (pat == null || organizationName == null || projectName == null || 
                 pat.length == 0 || organizationName.length == 0 || projectName.length == 0) {
@@ -124,9 +124,9 @@
             organizationName = document.getElementById('organization').value;
             projectName = document.getElementById('project').value;
             pat = document.getElementById('pat').value;
-            sessionStorage.setItem("organization", organizationName);
-            sessionStorage.setItem("project", projectName);
-            sessionStorage.setItem("pat", pat);
+            localStorage.setItem("organization", organizationName);
+            localStorage.setItem("project", projectName);
+            localStorage.setItem("pat", pat);
             loadConfiguration();
         }
 
