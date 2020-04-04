@@ -30,6 +30,12 @@
         <button id="setupClose" onclick="hideSetup();" style="display:none">➖</button>
     </div>
     <div id="setup" style="display:none">
+        Organization:
+        <input id="organization" type="text" title="organization" />
+
+        Project:
+        <input id="project" type="text" title="project" />
+
         Personal Access Token (PAT):
         <input id="pat" type="text" title="pat" />
         <br /><br />
@@ -59,6 +65,8 @@
     <div id="log"></div>
 
     <script>
+        let organization = "";
+        let project = "";
         let pat = "";
 
         let userAgentApplication;
@@ -78,13 +86,18 @@
         }
 
         function loadConfiguration() {
+            organization = sessionStorage.getItem("organization");
+            project = sessionStorage.getItem("project");
             pat = sessionStorage.getItem("pat");
 
-            if (pat == null || pat.length == 0) {
+            if (pat == null || organization == null || project == null || 
+                pat.length == 0 || organization.length == 0 || project.length == 0) {
                 showSetup();
                 return;
             }
             else {
+                document.getElementById('organization').value = organization;
+                document.getElementById('project').value = project;
                 document.getElementById('pat').value = pat;
                 hideSetup();
                 document.getElementById('afterConfiguration').style.display = '';
@@ -92,7 +105,11 @@
         }
 
         function saveConfiguration() {
+            organization = document.getElementById('organization').value;
+            project = document.getElementById('project').value;
             pat = document.getElementById('pat').value;
+            sessionStorage.setItem("organization", organization);
+            sessionStorage.setItem("project", project);
             sessionStorage.setItem("pat", pat);
             loadConfiguration();
         }
