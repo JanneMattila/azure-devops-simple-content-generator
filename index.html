@@ -178,6 +178,65 @@
                     appendLog("Git created: <a href='" + git.webUrl + "' target='_blank'>" + git.name + "</a>");
 
                     console.log(data);
+                    document.getElementById("configurationFile").files[0].text()
+                        .then(text => createGitCommit(text));
+                })
+                .catch(error => {
+                    console.log(error);
+                });            
+        }
+
+        function createGitCommit(configurationContent) {
+            let json = {
+                "refUpdates": [{
+                    "name": "refs/heads/master",
+                    "oldObjectId": "0000000000000000000000000000000000000000"
+                }],
+                "commits": [{
+                    "comment": "Add project file",
+                    "changes": [
+                        {
+                            "changeType": "add",
+                            "item": {
+                                "path": "/README.md"
+                            },
+                            "newContent": {
+                                "content": "# " + project.name + " documentation",
+                                "contentType": "rawtext"
+                            }
+                        },
+                        {
+                            "changeType": "add",
+                            "item": {
+                                "path": "/configuration.csv"
+                            },
+                            "newContent": {
+                                "content": configurationContent,
+                                "contentType": "rawtext"
+                            }
+                        }
+                    ]
+                    }
+                ]
+            };
+
+            console.log(json);
+            fetch(endpoint + organizationName + "/" + projectName + "/_apis/git/repositories/" + git.id + "/pushes?api-version=5.1",
+                {
+                    method: "POST",
+                    body: JSON.stringify(json),
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Basic " + accessToken
+                    }
+                })
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    appendLog("Configuration pushed to repository.");
+
+                    console.log(data);
                 })
                 .catch(error => {
                     console.log(error);
