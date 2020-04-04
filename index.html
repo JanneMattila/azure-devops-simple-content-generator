@@ -175,7 +175,7 @@
                 })
                 .then(data => {
                     git = data;
-                    appendLog("Git created: " + git.name);
+                    appendLog("Git created: <a href='" + git.webUrl + "' target='_blank'>" + git.name + "</a>");
 
                     console.log(data);
                 })
