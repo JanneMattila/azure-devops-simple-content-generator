@@ -1,10 +1,79 @@
 @endpoint = https://dev.azure.com/
 @organization = orgname
-@project = projectname
+@projectName = projectname
 # base64(":" + pat)
-@auth = pat_from_web_app
+@auth = pat
 
 ### Fetch projects
 GET {{endpoint}}{{organization}}/_apis/projects?api-version=2.0 HTTP/1.1
 Content-type: application/json
 Authorization: Basic {{auth}}
+
+### Fetch project by name
+# @name project
+GET {{endpoint}}{{organization}}/_apis/projects/{{projectName}}?api-version=2.0 HTTP/1.1
+Content-type: application/json
+Authorization: Basic {{auth}}
+
+### Create git repository to project
+# @name git
+@projectId = {{project.response.body.id}}
+POST {{endpoint}}{{organization}}/_apis/git/repositories?api-version=5.1 HTTP/1.1
+Content-type: application/json
+Authorization: Basic {{auth}}
+
+{
+    "name": "gitname",
+    "project": {
+        "id": "{{projectId}}"
+    }
+}
+
+### Add initial commit to git repository
+@gitId = {{git.response.body.id}}
+POST {{endpoint}}{{organization}}/_apis/git/repositories/{{gitId}}/pushes?api-version=5.1 HTTP/1.1
+Content-type: application/json
+Authorization: Basic {{auth}}
+
+{
+    "refUpdates": [{
+        "name": "refs/heads/master",
+        "oldObjectId": "0000000000000000000000000000000000000000"
+    }],
+    "commits": [{
+        "comment": "Add project file",
+        "changes": [
+            {
+                "changeType": "add",
+                "item": {
+                    "path": "/README.md"
+                },
+                "newContent": {
+                    "content": "# Readme title",
+                    "contentType": "rawtext"
+                }
+            },
+            {
+                "changeType": "add",
+                "item": {
+                    "path": "/configuration.csv"
+                },
+                "newContent": {
+                    "content": "put your csv data here",
+                    "contentType": "rawtext"
+                }
+            },
+            {
+                "changeType": "add",
+                "item": {
+                    "path": "/azure-pipelines.yml"
+                },
+                "newContent": {
+                    "content": "put your yml content here",
+                    "contentType": "rawtext"
+                }
+            }
+        ]
+        }
+    ]
+}
