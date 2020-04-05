@@ -253,6 +253,7 @@
                 })
                 .then(data => {
                     appendLog("Configuration pushed to repository.");
+                    appendLog("Done! Continue working in <a href='" + git.webUrl + "' target='_blank'>" + git.name + "</a>.");
 
                     console.log(data);
                 })
