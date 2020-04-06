@@ -9,7 +9,8 @@
         html,
         body,
         input,
-        select {
+        select,
+        textarea {
             padding-top: 0px;
             padding-bottom: 10px;
             padding-left: 20px;
@@ -38,7 +39,10 @@
         <input id="project" type="text" title="project" />
 
         Personal Access Token (PAT):
-        <input id="pat" type="text" title="pat" />
+        <input id="pat" type="password" title="pat" />
+
+        YAML:
+        <textarea id="yaml" type="text" title="yaml" rows="10" cols="40"></textarea>
         <br /><br />
         <input id="saveConfigurationButton" type="button" value="Save" onclick="saveConfiguration();" />
         <hr />
@@ -50,9 +54,6 @@
 
         Configuration file:
         <input id="configurationFile" type="file" title="Configuration file" />
-
-        Template file:
-        <input id="yamlFile" type="file" title="YAML file" />
 
         Template:
         <select id="template">
@@ -72,6 +73,7 @@
         let organizationName = "";
         let projectName = "";
         let pat = "";
+        let yaml = "";
 
         let endpoint = "https://dev.azure.com/";
         let accessToken = "";
@@ -104,9 +106,10 @@
             organizationName = localStorage.getItem("organization");
             projectName = localStorage.getItem("project");
             pat = localStorage.getItem("pat");
+            yaml = localStorage.getItem("yaml");
 
-            if (pat == null || organizationName == null || projectName == null || 
-                pat.length == 0 || organizationName.length == 0 || projectName.length == 0) {
+            if (pat == null || organizationName == null || projectName == null || yaml == null || 
+                pat.length == 0 || organizationName.length == 0 || projectName.length == 0 || yaml.length == 0) {
                 showSetup();
                 return;
             }
@@ -114,6 +117,7 @@
                 document.getElementById('organization').value = organizationName;
                 document.getElementById('project').value = projectName;
                 document.getElementById('pat').value = pat;
+                document.getElementById('yaml').value = yaml;
                 hideSetup();
                 document.getElementById('afterConfiguration').style.display = '';
 
@@ -125,9 +129,11 @@
             organizationName = document.getElementById('organization').value;
             projectName = document.getElementById('project').value;
             pat = document.getElementById('pat').value;
+            yaml = document.getElementById('yaml').value;
             localStorage.setItem("organization", organizationName);
             localStorage.setItem("project", projectName);
             localStorage.setItem("pat", pat);
+            localStorage.setItem("yaml", yaml);
             loadConfiguration();
         }
 
@@ -184,10 +190,7 @@
                     console.log(data);
                     document.getElementById("configurationFile").files[0].text()
                         .then(text => {
-                            document.getElementById("yamlFile").files[0].text()
-                                .then(yaml => {
-                                    createGitCommit(text, yaml);
-                                });
+                            createGitCommit(text, yaml);
                         });
                 })
                 .catch(error => {
