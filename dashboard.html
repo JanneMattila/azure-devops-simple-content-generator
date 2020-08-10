@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Azure DevOps Simple Org Dashboard</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link rel="shortcut icon" href="favicon.ico" />
+    <style type="text/css">
+        html,
+        body,
+        input,
+        select,
+        textarea {
+            padding-top: 0px;
+            padding-bottom: 10px;
+            padding-left: 20px;
+            font-family: 'Segoe UI Light', sans-serif;
+            font-size: 20px;
+            text-align: left;
+            margin: 0 auto;
+            width: 800px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>
+        Azure DevOps Simple Org Dashboard
+    </h1>
+
+    <div>
+        <button id="setupOpen" onclick="showSetup();">➕</button>
+        <button id="setupClose" onclick="hideSetup();" style="display:none">➖</button>
+    </div>
+    <div id="setup" style="display:none">
+        Organization:
+        <input id="organization" type="text" title="organization" />
+
+        Personal Access Token (PAT):
+        <input id="pat" type="password" title="pat" />
+
+        <br /><br />
+        <input id="saveConfigurationButton" type="button" value="Save" onclick="saveConfiguration();" />
+        <hr />
+    </div>
+    <br />
+    <div id="afterConfiguration" style="display:none">
+        <input id="scanButton" type="button" value="Scan" onclick="scan();" />
+    </div>
+    <br />
+    <br />
+    <div id="log"></div>
+
+    <script>
+        let organizationName = "";
+        let projectName = "";
+        let pat = "";
+        let yaml = "";
+
+        let endpoint = "https://dev.azure.com/";
+        let accessToken = "";
+
+        let project = {};
+        let git = {};
+
+        function clearLog() {
+            document.getElementById("log").innerHTML = "";
+        }
+
+        function appendLog(message) {
+            document.getElementById("log").innerHTML =
+                message + "<br />" + document.getElementById("log").innerHTML;
+        }
+
+        function showSetup() {
+            document.getElementById('setupOpen').style.display = 'none';
+            document.getElementById('setupClose').style.display = '';
+            document.getElementById('setup').style.display = '';
+        }
+
+        function hideSetup() {
+            document.getElementById('setupOpen').style.display = '';
+            document.getElementById('setupClose').style.display = 'none';
+            document.getElementById('setup').style.display = 'none';
+        }
+
+        function loadConfiguration() {
+            organizationName = localStorage.getItem("organization");
+            pat = localStorage.getItem("pat");
+
+            if (pat == null || organizationName == null ||
+                pat.length == 0 || organizationName.length == 0) {
+                showSetup();
+                return;
+            }
+            else {
+                document.getElementById('organization').value = organizationName;
+                document.getElementById('pat').value = pat;
+                hideSetup();
+                document.getElementById('afterConfiguration').style.display = '';
+
+                accessToken = btoa(":" + pat);
+            }
+        }
+
+        function saveConfiguration() {
+            organizationName = document.getElementById('organization').value;
+            pat = document.getElementById('pat').value;
+            localStorage.setItem("organization", organizationName);
+            localStorage.setItem("pat", pat);
+            loadConfiguration();
+        }
+
+        loadConfiguration();
+
+        function scan() {
+            clearLog();
+            fetch(endpoint + organizationName + "/_apis/projects/" + projectName + "?api-version=2.0",
+                {
+                    headers: {
+                        "Authorization": "Basic " + accessToken
+                    }
+                })
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    project = data;
+                    appendLog("Project found: " + project.name);
+                    console.log(data);
+
+                    createGit();
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        }
+
+        function createGit() {
+            let json = {
+                "name": document.getElementById('projectName').value,
+                "project": {
+                    "id": project.id
+                }
+            };
+
+            console.log(json);
+            fetch(endpoint + organizationName + "/_apis/git/repositories?api-version=5.1",
+                {
+                    method: "POST",
+                    body: JSON.stringify(json),
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Basic " + accessToken
+                    }
+                })
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    git = data;
+                    appendLog("Git created: <a href='" + git.webUrl + "' target='_blank'>" + git.name + "</a>");
+
+                    console.log(data);
+                    document.getElementById("configurationFile").files[0].text()
+                        .then(text => {
+                            createGitCommit(text, yaml);
+                        });
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        }
+
+        function createGitCommit(configurationContent, yamlContent) {
+            let json = {
+                "refUpdates": [{
+                    "name": "refs/heads/master",
+                    "oldObjectId": "0000000000000000000000000000000000000000"
+                }],
+                "commits": [{
+                    "comment": "Add project file",
+                    "changes": [
+                        {
+                            "changeType": "add",
+                            "item": {
+                                "path": "/README.md"
+                            },
+                            "newContent": {
+                                "content": "# " + project.name + " documentation",
+                                "contentType": "rawtext"
+                            }
+                        },
+                        {
+                            "changeType": "add",
+                            "item": {
+                                "path": "/configuration.csv"
+                            },
+                            "newContent": {
+                                "content": configurationContent,
+                                "contentType": "rawtext"
+                            }
+                        },
+                        {
+                            "changeType": "add",
+                            "item": {
+                                "path": "/azure-pipelines.yml"
+                            },
+                            "newContent": {
+                                "content": yamlContent,
+                                "contentType": "rawtext"
+                            }
+                        }
+                    ]
+                }
+                ]
+            };
+
+            console.log(json);
+            fetch(endpoint + organizationName + "/" + projectName + "/_apis/git/repositories/" + git.id + "/pushes?api-version=5.1",
+                {
+                    method: "POST",
+                    body: JSON.stringify(json),
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Basic " + accessToken
+                    }
+                })
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    appendLog("Configuration pushed to repository.");
+                    appendLog("Done! Continue working in <a href='" + git.webUrl + "' target='_blank'>" + git.name + "</a>.");
+
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        }
+    </script>
+</body>
+
+</html>
