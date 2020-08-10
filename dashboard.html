@@ -61,9 +61,8 @@
         let endpoint = "https://dev.azure.com/";
         let accessToken = "";
 
-        let projects = {};
         let repositories = [];
-        let updates = {};
+        let updates = [];
 
         function clearLog() {
             document.getElementById("log").innerHTML = "";
@@ -115,7 +114,8 @@
 
         loadConfiguration();
 
-        function scan() {
+        const scan = function () {
+
             clearLog();
             fetch(`${endpoint}${organizationName}/_apis/projects?api-version=6.0-preview.1`,
                 {
@@ -138,7 +138,7 @@
                 });
         }
 
-        function scanRepositories() {
+        const scanRepositories = function () {
             for (let i = 0; i < projects.value.length; i++) {
                 const project = projects.value[i];
                 appendLog("Scanning project repositories: " + project.name);
@@ -155,7 +155,6 @@
                     .then(data => {
                         appendLog("Repositories found: " + data.value.length);
 
-                        // repositories.push(data.value);
                         scanPushes(project, data.value);
                     })
                     .catch(error => {
@@ -164,9 +163,10 @@
             }
         }
 
-        function scanPushes(project, projectRepositories) {
+        const scanPushes = function (project, projectRepositories) {
             for (let i = 0; i < projectRepositories.length; i++) {
                 const repo = projectRepositories[i];
+                repositories.push(repo);
                 appendLog("Scanning repository: " + repo.name);
 
                 fetch(`${endpoint}${organizationName}/${project.id}/_apis/git/repositories/${repo.id}/pushes?api-version=6.0-preview.1&$top=1`,
@@ -179,13 +179,42 @@
                         return response.json();
                     })
                     .then(data => {
-                        appendLog("Last update to this repository: " + data.value[0].date);
-
                         console.log(data);
+                        if (data.value && data.value.length > 0 && data.value[0].date) {
+                            // appendLog("Last update to this repository: " + data.value[0].date);
+
+                            updates.push({
+                                "project": project.name,
+                                "repository": repo.name,
+                                "lastUpdated": new Date(data.value[0].date)
+                            });
+                        }
+                        else {
+                            updates.push({
+                                "project": project.name,
+                                "repository": repo.name,
+                                "lastUpdated": new Date(0)
+                            });
+                        }
+
+                        displayStats();
                     })
                     .catch(error => {
                         console.log(error);
                     });
+            }
+        }
+
+        const displayStats = function () {
+            if (updates.length == repositories.length) {
+                clearLog();
+                console.log(updates);
+                updates.sort((left, right) => (left.lastUpdated > right.lastUpdated) ? 1 : -1);
+                console.log(updates);
+                for (let i = 0; i < updates.length; i++) {
+                    const u = updates[i];
+                    appendLog(`Project: ${u.project}, repository: ${u.repository}, updates: ${u.lastUpdated}`);
+                }
             }
         }
     </script>
