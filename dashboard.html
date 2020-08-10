@@ -62,7 +62,7 @@
         let accessToken = "";
 
         let projects = {};
-        let repositories = {};
+        let repositories = [];
         let updates = {};
 
         function clearLog() {
@@ -139,12 +139,11 @@
         }
 
         function scanRepositories() {
-
             for (let i = 0; i < projects.value.length; i++) {
                 const project = projects.value[i];
                 appendLog("Scanning project repositories: " + project.name);
 
-                fetch(`${endpoint}${organizationName}/${project.id}_apis/git/repositories?api-version=6.0-preview.1`,
+                fetch(`${endpoint}${organizationName}/${project.id}/_apis/git/repositories?api-version=6.0-preview.1`,
                     {
                         headers: {
                             "Authorization": "Basic " + accessToken
@@ -154,16 +153,10 @@
                         return response.json();
                     })
                     .then(data => {
-                        appendLog("Repositories found: " + projects.value.length);
+                        appendLog("Repositories found: " + data.value.length);
 
-                        repositories.push(data.value);
-                        // appendLog("Git created: <a href='" + git.webUrl + "' target='_blank'>" + git.name + "</a>");
-
-                        // console.log(data);
-                        // document.getElementById("configurationFile").files[0].text()
-                        //     .then(text => {
-                        //         createGitCommit(text, yaml);
-                        //     });
+                        // repositories.push(data.value);
+                        scanPushes(project, data.value);
                     })
                     .catch(error => {
                         console.log(error);
@@ -171,72 +164,29 @@
             }
         }
 
-        function createGitCommit(configurationContent, yamlContent) {
-            let json = {
-                "refUpdates": [{
-                    "name": "refs/heads/master",
-                    "oldObjectId": "0000000000000000000000000000000000000000"
-                }],
-                "commits": [{
-                    "comment": "Add project file",
-                    "changes": [
-                        {
-                            "changeType": "add",
-                            "item": {
-                                "path": "/README.md"
-                            },
-                            "newContent": {
-                                "content": "# " + project.name + " documentation",
-                                "contentType": "rawtext"
-                            }
-                        },
-                        {
-                            "changeType": "add",
-                            "item": {
-                                "path": "/configuration.csv"
-                            },
-                            "newContent": {
-                                "content": configurationContent,
-                                "contentType": "rawtext"
-                            }
-                        },
-                        {
-                            "changeType": "add",
-                            "item": {
-                                "path": "/azure-pipelines.yml"
-                            },
-                            "newContent": {
-                                "content": yamlContent,
-                                "contentType": "rawtext"
-                            }
+        function scanPushes(project, projectRepositories) {
+            for (let i = 0; i < projectRepositories.length; i++) {
+                const repo = projectRepositories[i];
+                appendLog("Scanning repository: " + repo.name);
+
+                fetch(`${endpoint}${organizationName}/${project.id}/_apis/git/repositories/${repo.id}/pushes?api-version=6.0-preview.1&$top=1`,
+                    {
+                        headers: {
+                            "Authorization": "Basic " + accessToken
                         }
-                    ]
-                }
-                ]
-            };
+                    })
+                    .then(response => {
+                        return response.json();
+                    })
+                    .then(data => {
+                        appendLog("Last update to this repository: " + data.value[0].date);
 
-            console.log(json);
-            fetch(endpoint + organizationName + "/" + projectName + "/_apis/git/repositories/" + git.id + "/pushes?api-version=5.1",
-                {
-                    method: "POST",
-                    body: JSON.stringify(json),
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Basic " + accessToken
-                    }
-                })
-                .then(response => {
-                    return response.json();
-                })
-                .then(data => {
-                    appendLog("Configuration pushed to repository.");
-                    appendLog("Done! Continue working in <a href='" + git.webUrl + "' target='_blank'>" + git.name + "</a>.");
-
-                    console.log(data);
-                })
-                .catch(error => {
-                    console.log(error);
-                });
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+            }
         }
     </script>
 </body>
