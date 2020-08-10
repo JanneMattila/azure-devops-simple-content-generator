@@ -51,6 +51,17 @@
     <br />
     <br />
     <div id="log"></div>
+    <table id="table" align="center" style="margin-top: 30px;">
+        <caption>Last updated repositories</caption>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Repository</th>
+                <th>Project</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
     <script>
         let organizationName = "";
@@ -211,9 +222,29 @@
                 console.log(updates);
                 updates.sort((left, right) => (left.lastUpdated > right.lastUpdated) ? 1 : -1);
                 console.log(updates);
+
+                let table = document.getElementById("table");
+                while (table.rows.length > 1) {
+                    table.deleteRow(-1);
+                }
+
                 for (let i = 0; i < updates.length; i++) {
                     const u = updates[i];
-                    appendLog(`Project: ${u.project}, repository: ${u.repository}, updates: ${u.lastUpdated}`);
+                    // appendLog(`Project: ${u.project}, repository: ${u.repository}, updates: ${u.lastUpdated}`);
+
+                    let row = table.insertRow(1);
+
+                    let timeCell = row.insertCell(0);
+                    let timeText = document.createTextNode(u.lastUpdated.toLocaleString());
+                    timeCell.appendChild(timeText);
+
+                    let repositoryCell = row.insertCell(1);
+                    let repositoryText = document.createTextNode(u.repository);
+                    repositoryCell.appendChild(repositoryText);
+
+                    let projectCell = row.insertCell(1);
+                    let projectText = document.createTextNode(u.project);
+                    projectCell.appendChild(projectText);
                 }
             }
         }
