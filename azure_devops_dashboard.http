@@ -28,3 +28,7 @@ Authorization: Basic {{auth}}
 GET {{endpoint}}{{organization}}/{{projectId}}/_apis/git/repositories/{{repoId}}/pushes?api-version=6.0-preview.2&$top=1 HTTP/1.1
 Content-type: application/json
 Authorization: Basic {{auth}}
+
+###
+# Output contains last push to this repository:
+@lastPushDate = {{reporitory.response.body.value[0].date}}
