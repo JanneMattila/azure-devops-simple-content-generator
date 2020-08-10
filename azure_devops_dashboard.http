@@ -5,14 +5,13 @@
 
 ### Fetch projects
 # @name projects
-GET {{endpoint}}{{organization}}/_apis/projects?api-version=2.0 HTTP/1.1
+GET {{endpoint}}{{organization}}/_apis/projects?api-version=6.0-preview.1 HTTP/1.1
 Content-type: application/json
 Authorization: Basic {{auth}}
 
 ### Fetch first project information
 # @name project
-@projectId = {{project.response.body.id}}
-GET {{endpoint}}{{organization}}/_apis/projects/{{projectId}}?api-version=2.0 HTTP/1.1
+GET {{endpoint}}{{organization}}/_apis/projects/{{projects.response.body.value[0].id}}?api-version=6.0-preview.1 HTTP/1.1
 Content-type: application/json
 Authorization: Basic {{auth}}
 
@@ -20,5 +19,12 @@ Authorization: Basic {{auth}}
 # @name repositories
 @projectId = {{project.response.body.id}}
 GET {{endpoint}}{{organization}}/{{projectId}}/_apis/git/repositories?api-version=6.0-preview.1 HTTP/1.1
+Content-type: application/json
+Authorization: Basic {{auth}}
+
+### Fetch first repository information
+# @name reporitory
+@repoId = {{repositories.response.body.value[0].id}}
+GET {{endpoint}}{{organization}}/{{projectId}}/_apis/git/repositories/{{repoId}}/pushes?api-version=6.0-preview.2&$top=1 HTTP/1.1
 Content-type: application/json
 Authorization: Basic {{auth}}
