@@ -46,10 +46,7 @@
     </div>
     <br />
     <div id="afterConfiguration" style="display:none">
-        <input id="scanButton" type="button" value="Scan" onclick="scan();" />
     </div>
-    <br />
-    <br />
     <div id="log"></div>
     <table id="table" align="center" style="margin-top: 30px;">
         <caption>Last updated repositories</caption>
@@ -96,25 +93,6 @@
             document.getElementById('setup').style.display = 'none';
         }
 
-        function loadConfiguration() {
-            organizationName = localStorage.getItem("organization");
-            pat = localStorage.getItem("pat");
-
-            if (pat == null || organizationName == null ||
-                pat.length == 0 || organizationName.length == 0) {
-                showSetup();
-                return;
-            }
-            else {
-                document.getElementById('organization').value = organizationName;
-                document.getElementById('pat').value = pat;
-                hideSetup();
-                document.getElementById('afterConfiguration').style.display = '';
-
-                accessToken = btoa(":" + pat);
-            }
-        }
-
         function saveConfiguration() {
             organizationName = document.getElementById('organization').value;
             pat = document.getElementById('pat').value;
@@ -122,8 +100,6 @@
             localStorage.setItem("pat", pat);
             loadConfiguration();
         }
-
-        loadConfiguration();
 
         const scan = function () {
 
@@ -248,6 +224,28 @@
                 }
             }
         }
+
+        function loadConfiguration() {
+            organizationName = localStorage.getItem("organization");
+            pat = localStorage.getItem("pat");
+
+            if (pat == null || organizationName == null ||
+                pat.length == 0 || organizationName.length == 0) {
+                showSetup();
+                return;
+            }
+            else {
+                document.getElementById('organization').value = organizationName;
+                document.getElementById('pat').value = pat;
+                hideSetup();
+                document.getElementById('afterConfiguration').style.display = '';
+
+                accessToken = btoa(":" + pat);
+                scan();
+            }
+        }
+
+        loadConfiguration();        
     </script>
 </body>
 
