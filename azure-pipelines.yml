@@ -1,0 +1,86 @@
+variables:
+  demo1: 'variablecontent1'
+
+trigger:
+  branches:
+    include:
+    - master
+    - dev
+    - users/*
+    - features/*
+    - releases/*
+    exclude:
+    - releases/old*
+
+pool:
+  vmImage: ubuntu-16.04
+
+name: 1.0.$(Rev:r)
+stages:
+- stage: Build
+  jobs:
+  - job: BuildFirst
+    steps:
+    - task: Bash@3
+      displayName: "v1 - example"
+      inputs:
+        targetType: 'inline'
+        script: |
+          # Write your commands here
+          echo 'Hello world v1'
+
+    - task: Bash@3
+      displayName: "v2 - master branch"
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      inputs:
+        targetType: 'inline'
+        script: |
+          # Write your commands here
+          echo 'Hello world v2 - master branch'
+
+    - task: Bash@3
+      displayName: "v3 - CI"
+      condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+      inputs:
+        targetType: 'inline'
+        script: |
+          # Write your commands here
+          echo 'Hello world v3 - CI'
+
+    - task: Bash@3
+      name: v4
+      displayName: "v4 - users/* branches"
+      condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/users/'))
+      inputs:
+        targetType: 'inline'
+        script: |
+          # Write your commands here
+          echo 'Hello world v4 - users/* branches'
+
+    - task: Bash@3
+      name: v5
+      displayName: "v5 - variables.demo1 = 'variablecontent1'"
+      condition: and(succeeded(), eq('${{ variables.demo1 }}', 'variablecontent1'))
+      inputs:
+        targetType: 'inline'
+        script: |
+          # Write your commands here
+          echo 'Hello world v5 -  variables.demo1'
+          echo "##vso[task.setvariable variable=myOutput;isOutput=true]Yes"
+
+  - job: BuildSecond
+    dependsOn: BuildFirst
+    condition: eq(dependencies.BuildFirst.outputs['v5.myOutput'], 'Yes')
+    variables:
+      previousOutput: $[ dependencies.BuildFirst.outputs['v5.myOutput'] ]
+    steps:
+    - task: Bash@3
+      displayName: "v6 - dependency"
+      env:
+        myVar: $(previousOutput)
+      inputs:
+        targetType: 'inline'
+        script: |
+          # Write your commands here
+          echo 'Hello world v6'
+          echo 'myVar ' $myVar
